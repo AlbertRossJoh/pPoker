@@ -1,0 +1,21 @@
+# GraphQL schema example
+#
+# https://gqlgen.com/getting-started/
+
+type UserCard{
+  name: String!
+  num: Int!
+}
+input UserCardInput{
+  name: String!
+  num: Int!
+}
+type Subscription {
+  cards: [UserCard!]!
+}
+type Query {
+  cards: [UserCard!]!
+}
+type Mutation {
+  playCard(input: UserCardInput!): [UserCard!]!
+}

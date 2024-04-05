@@ -1,0 +1,20 @@
+services:
+  frontend:
+    build:
+      context: ./p-poker-app/
+      dockerfile: ./Dockerfile
+    ports:
+      - "3000:3000"
+    networks:
+      - front-tier
+  backend:
+    build:
+      context: ./p-poker-backend/
+      dockerfile: ./Dockerfile
+    ports:
+      - "8080:8080"
+    networks:
+      - front-tier
+
+networks:
+  front-tier: {}

@@ -18,7 +18,7 @@ import { v4 as uuidv4 } from 'uuid';
 export default function MyDialog(props: any) {
   const [trigger, setTrigger] = useState(false);
   const [uName, setUname] = useState("");
-
+ const router = useRouter()
   const [cookies, setCookie] = useCookies(["name"]);
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setUname(e.target.value);
@@ -30,12 +30,13 @@ export default function MyDialog(props: any) {
 
   useEffect(() => {
     setTrigger(true);
+
   }, []);
 
   if (!trigger || cookies.name) {
-    useRouter().push("/game/"+uuidv4())
     return null;
   }
+  router.push("/game/"+uuidv4())
   return (
     <Dialog open={true}>
       <DialogContent className="sm:max-w-[425px]">

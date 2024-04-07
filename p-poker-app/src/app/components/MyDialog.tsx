@@ -13,12 +13,12 @@ import { randomUUID } from "crypto";
 import { useRouter } from "next/navigation";
 import { ChangeEvent, useEffect, useState } from "react";
 import { useCookies } from "react-cookie";
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from "uuid";
 
 export default function MyDialog(props: any) {
   const [trigger, setTrigger] = useState(false);
   const [uName, setUname] = useState("");
-
+  const router = useRouter();
   const [cookies, setCookie] = useCookies(["name"]);
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setUname(e.target.value);
@@ -26,14 +26,16 @@ export default function MyDialog(props: any) {
   function handleSubmit() {
     setCookie("name", uName);
     setTrigger(false);
+    router.push("/game/" + uuidv4());
   }
 
-  useEffect(() => {
-    setTrigger(true);
-  }, []);
 
-  if (!trigger || cookies.name) {
-    useRouter().push("/game/"+uuidv4())
+  if (cookies.name){
+    router.push("/game/" + uuidv4());
+    return null
+  }
+
+  if (!trigger && cookies.name) {
     return null;
   }
   return (

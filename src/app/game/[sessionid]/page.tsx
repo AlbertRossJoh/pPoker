@@ -14,4 +14,4 @@ export default function Page() {
     </React.StrictMode>
   );
 }
-export const dynamicParams = false
+export const dynamicParams = true

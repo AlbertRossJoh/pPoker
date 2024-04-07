@@ -5,8 +5,6 @@ import { cardQuery } from "../graphql/schema";
 import { UserCardResult } from "@/app/graphql/gqltypes";
 import Card from "./card";
 import SubmitResult from "./submitResult";
-import { useRouter } from "next/router";
-import { ParsedUrlQuery } from "querystring";
 export default function CardUserDisplay(props: any) {
   const [ready, setReady] = useState<boolean>(false);
   const { data, startPolling } = useQuery<UserCardResult>(cardQuery, {

@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 
 export default function GameDisplay() {
   const session = usePathname().split("/").reverse()[0]
-  console.log(session)
+//   console.log(session)
   return (
     <>
       <CardUserDisplay session={session}/>

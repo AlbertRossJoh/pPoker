@@ -2,7 +2,8 @@ import React from "react";
 import { ApolloWrapper } from "../../ApolloWrapper";
 import GameDisplay from "@/app/components/gameDisplay";
 
-export default function Session() {
+
+export default function Page() {
   return (
     <React.StrictMode>
       <ApolloWrapper>
@@ -13,3 +14,4 @@ export default function Session() {
     </React.StrictMode>
   );
 }
+export const dynamicParams = false

@@ -1,9 +1,9 @@
-# fly.toml app configuration file generated for p-poker-app-falling-hill-6922 on 2024-04-07T20:08:41+02:00
+# fly.toml app configuration file generated for p-poker-app-aged-shadow-7033 on 2024-04-07T22:01:53+02:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'p-poker-app-falling-hill-6922'
+app = 'p-poker-app-aged-shadow-7033'
 primary_region = 'arn'
 
 [build]

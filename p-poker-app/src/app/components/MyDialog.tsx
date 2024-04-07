@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { randomUUID } from "crypto";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { ChangeEvent, useEffect, useState } from "react";
 import { useCookies } from "react-cookie";
 import { v4 as uuidv4 } from "uuid";
@@ -25,17 +25,25 @@ export default function MyDialog(props: any) {
   };
   function handleSubmit() {
     setCookie("name", uName);
-    setTrigger(false);
-    router.push("/game/" + uuidv4());
+    if (props.session) {
+      router.push("/game/" + props.session);
+    } else {
+      router.push("/game/" + uuidv4());
+    }
   }
+  useEffect(() => {
+    setTrigger(true);
+  }, []);
 
-
-  if (cookies.name){
-    router.push("/game/" + uuidv4());
-    return null
+  if (!trigger) {
+    return null;
   }
-
-  if (!trigger && cookies.name) {
+  if (cookies.name) {
+    if (props.session) {
+      router.push("/game/" + props.session);
+      return null;
+    }
+    router.push("/game/" + uuidv4());
     return null;
   }
   return (

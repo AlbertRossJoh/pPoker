@@ -10,22 +10,47 @@ import (
 	"github.com/AlbertRossJoh/planning-poker-backend/graph/model"
 )
 
-var (
-	usr2Cards       = make(map[string]int)
-	cardsPlayedChan = make(chan []*model.UserCard, 1024)
-)
-
 // PlayCard is the resolver for the playCard field.
 func (r *mutationResolver) PlayCard(ctx context.Context, input model.UserCardInput) ([]*model.UserCard, error) {
-	usr2Cards[input.Name] = input.Num
-	usrCards := getUsrCards()
+	if sessionChooser[input.Session] == nil {
+		sessionChooser[input.Session] = make(map[string]*model.UserCard)
+	}
+	if sessionChooser[input.Session][input.Name] == nil {
+		sessionChooser[input.Session][input.Name] = &model.UserCard{Name: input.Name, Num: input.Num, PollresultReady: false}
+	} else {
+		uc := sessionChooser[input.Session][input.Name]
+		sessionChooser[input.Session][input.Name] = &model.UserCard{Name: uc.Name, Num: input.Num, PollresultReady: uc.PollresultReady}
+	}
+	usrCards := getUsrCards(input.Session)
 	cardsPlayedChan <- usrCards
 	return usrCards, nil
 }
 
+// EndSession is the resolver for the endSession field.
+func (r *mutationResolver) EndSession(ctx context.Context, input model.EndSessionInput) (bool, error) {
+	if sessionChooser[input.Session] == nil {
+		sessionChooser[input.Session] = make(map[string]*model.UserCard)
+	}
+	for key, val := range sessionChooser[input.Session] {
+		sessionChooser[input.Session][key] = &model.UserCard{Name: val.Name, Num: val.Num, PollresultReady: true}
+	}
+	return true, nil
+}
+
+// BeginSession is the resolver for the beginSession field.
+func (r *mutationResolver) BeginSession(ctx context.Context, input model.BeginSessionInput) (bool, error) {
+	if sessionChooser[input.Session] == nil {
+		sessionChooser[input.Session] = make(map[string]*model.UserCard)
+	}
+	for key, val := range sessionChooser[input.Session] {
+		sessionChooser[input.Session][key] = &model.UserCard{Name: val.Name, Num: val.Num, PollresultReady: false}
+	}
+	return true, nil
+}
+
 // Cards is the resolver for the cards field.
-func (r *queryResolver) Cards(ctx context.Context) ([]*model.UserCard, error) {
-	return getUsrCards(), nil
+func (r *queryResolver) Cards(ctx context.Context, session string) ([]*model.UserCard, error) {
+	return getUsrCards(session), nil
 }
 
 // Cards is the resolver for the cards field.
@@ -45,11 +70,3 @@ func (r *Resolver) Subscription() SubscriptionResolver { return &subscriptionRes
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 type subscriptionResolver struct{ *Resolver }
-
-func getUsrCards() []*model.UserCard {
-	acc := make([]*model.UserCard, 0)
-	for key, val := range usr2Cards {
-		acc = append(acc, &model.UserCard{Name: key, Num: val})
-	}
-	return acc
-}

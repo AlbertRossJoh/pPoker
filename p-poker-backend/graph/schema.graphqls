@@ -5,17 +5,29 @@
 type UserCard{
   name: String!
   num: Int!
+  pollresultReady: Boolean!
 }
 input UserCardInput{
+  session: String!
   name: String!
   num: Int!
+}
+input EndSessionInput{
+  end: Boolean!
+  session: String!
+}
+input BeginSessionInput{
+  begin: Boolean!
+  session: String!
 }
 type Subscription {
   cards: [UserCard!]!
 }
 type Query {
-  cards: [UserCard!]!
+  cards(session: String!): [UserCard!]!
 }
 type Mutation {
   playCard(input: UserCardInput!): [UserCard!]!
+  endSession(input: EndSessionInput!): Boolean!
+  beginSession(input: BeginSessionInput!): Boolean!
 }

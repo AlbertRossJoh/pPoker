@@ -2,6 +2,16 @@
 
 package model
 
+type BeginSessionInput struct {
+	Begin   bool   `json:"begin"`
+	Session string `json:"session"`
+}
+
+type EndSessionInput struct {
+	End     bool   `json:"end"`
+	Session string `json:"session"`
+}
+
 type Mutation struct {
 }
 
@@ -12,11 +22,13 @@ type Subscription struct {
 }
 
 type UserCard struct {
-	Name string `json:"name"`
-	Num  int    `json:"num"`
+	Name            string `json:"name"`
+	Num             int    `json:"num"`
+	PollresultReady bool   `json:"pollresultReady"`
 }
 
 type UserCardInput struct {
-	Name string `json:"name"`
-	Num  int    `json:"num"`
+	Session string `json:"session"`
+	Name    string `json:"name"`
+	Num     int    `json:"num"`
 }

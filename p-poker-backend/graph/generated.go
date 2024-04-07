@@ -50,11 +50,13 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	Mutation struct {
-		PlayCard func(childComplexity int, input model.UserCardInput) int
+		BeginSession func(childComplexity int, input model.BeginSessionInput) int
+		EndSession   func(childComplexity int, input model.EndSessionInput) int
+		PlayCard     func(childComplexity int, input model.UserCardInput) int
 	}
 
 	Query struct {
-		Cards func(childComplexity int) int
+		Cards func(childComplexity int, session string) int
 	}
 
 	Subscription struct {
@@ -62,16 +64,19 @@ type ComplexityRoot struct {
 	}
 
 	UserCard struct {
-		Name func(childComplexity int) int
-		Num  func(childComplexity int) int
+		Name            func(childComplexity int) int
+		Num             func(childComplexity int) int
+		PollresultReady func(childComplexity int) int
 	}
 }
 
 type MutationResolver interface {
 	PlayCard(ctx context.Context, input model.UserCardInput) ([]*model.UserCard, error)
+	EndSession(ctx context.Context, input model.EndSessionInput) (bool, error)
+	BeginSession(ctx context.Context, input model.BeginSessionInput) (bool, error)
 }
 type QueryResolver interface {
-	Cards(ctx context.Context) ([]*model.UserCard, error)
+	Cards(ctx context.Context, session string) ([]*model.UserCard, error)
 }
 type SubscriptionResolver interface {
 	Cards(ctx context.Context) (<-chan []*model.UserCard, error)
@@ -96,6 +101,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	_ = ec
 	switch typeName + "." + field {
 
+	case "Mutation.beginSession":
+		if e.complexity.Mutation.BeginSession == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_beginSession_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.BeginSession(childComplexity, args["input"].(model.BeginSessionInput)), true
+
+	case "Mutation.endSession":
+		if e.complexity.Mutation.EndSession == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_endSession_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.EndSession(childComplexity, args["input"].(model.EndSessionInput)), true
+
 	case "Mutation.playCard":
 		if e.complexity.Mutation.PlayCard == nil {
 			break
@@ -113,7 +142,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		return e.complexity.Query.Cards(childComplexity), true
+		args, err := ec.field_Query_cards_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Cards(childComplexity, args["session"].(string)), true
 
 	case "Subscription.cards":
 		if e.complexity.Subscription.Cards == nil {
@@ -136,6 +170,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.UserCard.Num(childComplexity), true
 
+	case "UserCard.pollresultReady":
+		if e.complexity.UserCard.PollresultReady == nil {
+			break
+		}
+
+		return e.complexity.UserCard.PollresultReady(childComplexity), true
+
 	}
 	return 0, false
 }
@@ -144,6 +185,8 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	rc := graphql.GetOperationContext(ctx)
 	ec := executionContext{rc, e, 0, 0, make(chan graphql.DeferredResult)}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
+		ec.unmarshalInputBeginSessionInput,
+		ec.unmarshalInputEndSessionInput,
 		ec.unmarshalInputUserCardInput,
 	)
 	first := true
@@ -278,6 +321,36 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
 // region    ***************************** args.gotpl *****************************
 
+func (ec *executionContext) field_Mutation_beginSession_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.BeginSessionInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNBeginSessionInput2githubᚗcomᚋAlbertRossJohᚋplanningᚑpokerᚑbackendᚋgraphᚋmodelᚐBeginSessionInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_endSession_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.EndSessionInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNEndSessionInput2githubᚗcomᚋAlbertRossJohᚋplanningᚑpokerᚑbackendᚋgraphᚋmodelᚐEndSessionInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_playCard_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -305,6 +378,21 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		}
 	}
 	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_cards_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["session"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("session"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["session"] = arg0
 	return args, nil
 }
 
@@ -389,6 +477,8 @@ func (ec *executionContext) fieldContext_Mutation_playCard(ctx context.Context, 
 				return ec.fieldContext_UserCard_name(ctx, field)
 			case "num":
 				return ec.fieldContext_UserCard_num(ctx, field)
+			case "pollresultReady":
+				return ec.fieldContext_UserCard_pollresultReady(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type UserCard", field.Name)
 		},
@@ -401,6 +491,116 @@ func (ec *executionContext) fieldContext_Mutation_playCard(ctx context.Context, 
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_playCard_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_endSession(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_endSession(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().EndSession(rctx, fc.Args["input"].(model.EndSessionInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_endSession(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_endSession_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_beginSession(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_beginSession(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().BeginSession(rctx, fc.Args["input"].(model.BeginSessionInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_beginSession(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_beginSession_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -421,7 +621,7 @@ func (ec *executionContext) _Query_cards(ctx context.Context, field graphql.Coll
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Cards(rctx)
+		return ec.resolvers.Query().Cards(rctx, fc.Args["session"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -450,9 +650,22 @@ func (ec *executionContext) fieldContext_Query_cards(ctx context.Context, field 
 				return ec.fieldContext_UserCard_name(ctx, field)
 			case "num":
 				return ec.fieldContext_UserCard_num(ctx, field)
+			case "pollresultReady":
+				return ec.fieldContext_UserCard_pollresultReady(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type UserCard", field.Name)
 		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_cards_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
 	}
 	return fc, nil
 }
@@ -643,6 +856,8 @@ func (ec *executionContext) fieldContext_Subscription_cards(ctx context.Context,
 				return ec.fieldContext_UserCard_name(ctx, field)
 			case "num":
 				return ec.fieldContext_UserCard_num(ctx, field)
+			case "pollresultReady":
+				return ec.fieldContext_UserCard_pollresultReady(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type UserCard", field.Name)
 		},
@@ -733,6 +948,50 @@ func (ec *executionContext) fieldContext_UserCard_num(ctx context.Context, field
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _UserCard_pollresultReady(ctx context.Context, field graphql.CollectedField, obj *model.UserCard) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_UserCard_pollresultReady(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PollresultReady, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_UserCard_pollresultReady(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "UserCard",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
 		},
 	}
 	return fc, nil
@@ -2511,6 +2770,74 @@ func (ec *executionContext) fieldContext___Type_specifiedByURL(ctx context.Conte
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputBeginSessionInput(ctx context.Context, obj interface{}) (model.BeginSessionInput, error) {
+	var it model.BeginSessionInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"begin", "session"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "begin":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("begin"))
+			data, err := ec.unmarshalNBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Begin = data
+		case "session":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("session"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Session = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputEndSessionInput(ctx context.Context, obj interface{}) (model.EndSessionInput, error) {
+	var it model.EndSessionInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"end", "session"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "end":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("end"))
+			data, err := ec.unmarshalNBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.End = data
+		case "session":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("session"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Session = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputUserCardInput(ctx context.Context, obj interface{}) (model.UserCardInput, error) {
 	var it model.UserCardInput
 	asMap := map[string]interface{}{}
@@ -2518,13 +2845,20 @@ func (ec *executionContext) unmarshalInputUserCardInput(ctx context.Context, obj
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "num"}
+	fieldsInOrder := [...]string{"session", "name", "num"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
+		case "session":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("session"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Session = data
 		case "name":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
 			data, err := ec.unmarshalNString2string(ctx, v)
@@ -2575,6 +2909,20 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "playCard":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_playCard(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "endSession":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_endSession(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "beginSession":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_beginSession(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -2712,6 +3060,11 @@ func (ec *executionContext) _UserCard(ctx context.Context, sel ast.SelectionSet,
 			}
 		case "num":
 			out.Values[i] = ec._UserCard_num(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "pollresultReady":
+			out.Values[i] = ec._UserCard_pollresultReady(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -3064,6 +3417,11 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 
 // region    ***************************** type.gotpl *****************************
 
+func (ec *executionContext) unmarshalNBeginSessionInput2githubᚗcomᚋAlbertRossJohᚋplanningᚑpokerᚑbackendᚋgraphᚋmodelᚐBeginSessionInput(ctx context.Context, v interface{}) (model.BeginSessionInput, error) {
+	res, err := ec.unmarshalInputBeginSessionInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v interface{}) (bool, error) {
 	res, err := graphql.UnmarshalBoolean(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -3077,6 +3435,11 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalNEndSessionInput2githubᚗcomᚋAlbertRossJohᚋplanningᚑpokerᚑbackendᚋgraphᚋmodelᚐEndSessionInput(ctx context.Context, v interface{}) (model.EndSessionInput, error) {
+	res, err := ec.unmarshalInputEndSessionInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {

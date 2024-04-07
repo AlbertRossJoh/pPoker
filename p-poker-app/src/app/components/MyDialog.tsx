@@ -9,9 +9,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { ChangeEvent, ChangeEventHandler, useEffect, useState } from "react";
+import { randomUUID } from "crypto";
+import { useRouter } from "next/navigation";
+import { ChangeEvent, useEffect, useState } from "react";
 import { useCookies } from "react-cookie";
+import { v4 as uuidv4 } from 'uuid';
 
 export default function MyDialog(props: any) {
   const [trigger, setTrigger] = useState(false);
@@ -31,6 +33,7 @@ export default function MyDialog(props: any) {
   }, []);
 
   if (!trigger || cookies.name) {
+    useRouter().push("/game/"+uuidv4())
     return null;
   }
   return (

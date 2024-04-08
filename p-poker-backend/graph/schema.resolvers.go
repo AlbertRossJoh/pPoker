@@ -22,7 +22,6 @@ func (r *mutationResolver) PlayCard(ctx context.Context, input model.UserCardInp
 		sessionChooser[input.Session][input.Name] = &model.UserCard{Name: uc.Name, Num: input.Num, PollresultReady: uc.PollresultReady}
 	}
 	usrCards := getUsrCards(input.Session)
-	cardsPlayedChan <- usrCards
 	return usrCards, nil
 }
 
@@ -42,9 +41,7 @@ func (r *mutationResolver) BeginSession(ctx context.Context, input model.BeginSe
 	if sessionChooser[input.Session] == nil {
 		sessionChooser[input.Session] = make(map[string]*model.UserCard)
 	}
-	for key, val := range sessionChooser[input.Session] {
-		sessionChooser[input.Session][key] = &model.UserCard{Name: val.Name, Num: val.Num, PollresultReady: false}
-	}
+	delete(sessionChooser, input.Session)
 	return true, nil
 }
 

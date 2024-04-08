@@ -1,17 +1,13 @@
 "use client";
-// ^ this file needs the "use client" pragma
 
-import { ApolloLink, HttpLink, split } from "@apollo/client";
+import { HttpLink, split } from "@apollo/client";
 import { getMainDefinition } from "@apollo/client/utilities";
 import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
 import {
   ApolloNextAppProvider,
   NextSSRInMemoryCache,
   NextSSRApolloClient,
-  SSRMultipartLink,
 } from "@apollo/experimental-nextjs-app-support/ssr";
-import { WebSocketLink } from "apollo-link-ws";
-import { Kind, OperationTypeNode } from "graphql";
 import { createClient } from "graphql-ws";
 
 // have a function to create a client for you
@@ -23,7 +19,6 @@ function makeClient() {
     })
   );
   const httpLink = new HttpLink({
-    // this needs to be an absolute url, as relative urls cannot be used in SSR
     // uri: "http://192.168.1.65:8080/query",
     uri: "https://"+serverUrl,
     // you can disable result caching here if you want to
@@ -48,13 +43,11 @@ function makeClient() {
   httpLink,
 );
   return new NextSSRApolloClient({
-    // use the `NextSSRInMemoryCache`, not the normal `InMemoryCache`
     cache: new NextSSRInMemoryCache(),
     link: splitLink,
   });
 }
 
-// you need to create a component to wrap your app in
 export function ApolloWrapper({ children }: React.PropsWithChildren) {
   return (
     <ApolloNextAppProvider makeClient={makeClient}>

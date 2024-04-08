@@ -10,7 +10,7 @@ export default function CardDisplay(props: any) {
   let cardNums = [0];
   let prev = 0;
   let curr = 1;
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 12; i++) {
     let tmp = prev + curr;
     cardNums.push(tmp);
     prev = curr;

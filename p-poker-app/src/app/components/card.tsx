@@ -28,8 +28,18 @@ export default function Card(props: any) {
         (props.animation ? hoveranimation + select : "") 
       }
     >
-      <div className="m1">{props.reveal ? props.number : ""}</div>
+      <div className="m1">{props.reveal ? getCoffeeOrDoubt(props.number) : ""}</div>
     </button>
   );
 }
 
+function getCoffeeOrDoubt(num: Number): string{
+  switch (num){
+    case 144:
+      return '?'
+    case 233:
+      return '☕️'
+    default:
+      return num.toString()
+  }
+}

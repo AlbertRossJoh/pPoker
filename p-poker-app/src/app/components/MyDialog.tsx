@@ -46,7 +46,6 @@ export default function MyDialog(props: any) {
     router.push("/game/" + uuidv4());
     return null;
   }
-  router.push("/game/"+uuidv4())
   return (
     <Dialog open={true}>
       <DialogContent className="sm:max-w-[425px]">

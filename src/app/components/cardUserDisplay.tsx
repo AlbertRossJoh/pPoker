@@ -1,12 +1,10 @@
 "use client";
-import { useState } from "react";
 import { useQuery } from "@apollo/client";
 import { cardQuery } from "../graphql/schema";
 import { UserCardResult } from "@/app/graphql/gqltypes";
 import Card from "./card";
 import SubmitResult from "./submitResult";
 export default function CardUserDisplay(props: any) {
-  const [ready, setReady] = useState<boolean>(false);
   const { data, startPolling } = useQuery<UserCardResult>(cardQuery, {
     variables: { session: props.session },
     pollInterval: 1000,
@@ -29,7 +27,6 @@ export default function CardUserDisplay(props: any) {
       <div className="flex flex-row gap-4">
         {cpy
           ? cpy.map((uc, idx) => {
-              // console.log(uc);
               return (
                 <div
                   className="flex flex-col items-center"
@@ -50,7 +47,6 @@ export default function CardUserDisplay(props: any) {
       <SubmitResult
         session={props.session}
         reset={rdy}
-        startPolling={startPolling}
       />
     </div>
   );

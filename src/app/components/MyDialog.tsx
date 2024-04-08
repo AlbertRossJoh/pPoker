@@ -9,31 +9,41 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { randomUUID } from "crypto";
 import { useRouter } from "next/navigation";
 import { ChangeEvent, useEffect, useState } from "react";
 import { useCookies } from "react-cookie";
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from "uuid";
 
 export default function MyDialog(props: any) {
   const [trigger, setTrigger] = useState(false);
   const [uName, setUname] = useState("");
- const router = useRouter()
+  const router = useRouter();
   const [cookies, setCookie] = useCookies(["name"]);
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setUname(e.target.value);
   };
   function handleSubmit() {
     setCookie("name", uName);
-    setTrigger(false);
+    if (props.session) {
+      router.push("/game/" + props.session);
+    } else {
+      router.push("/game/" + uuidv4());
+    }
   }
-
   useEffect(() => {
     setTrigger(true);
 
   }, []);
 
-  if (!trigger || cookies.name) {
+  if (!trigger) {
+    return null;
+  }
+  if (cookies.name) {
+    if (props.session) {
+      router.push("/game/" + props.session);
+      return null;
+    }
+    router.push("/game/" + uuidv4());
     return null;
   }
   router.push("/game/"+uuidv4())

@@ -9,7 +9,6 @@ import MyDialog from "./MyDialog";
 export default function GameDisplay() {
   const session = usePathname().split("/").reverse()[0]
   const [cookies, setCookie] = useCookies(["name"]);
-//   console.log(session)
   return (
     <>
     {cookies.name ? null : <MyDialog session={session}/>}

@@ -1,7 +1,4 @@
-import CardDisplay from "./components/cardDisplay";
 import MyDialog from "./components/MyDialog";
-import CardUserDisplay from "./components/cardUserDisplay";
-import { ApolloWrapper } from "./ApolloWrapper";
 import React from "react";
 
 export default function Home() {

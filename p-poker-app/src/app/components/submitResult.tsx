@@ -4,8 +4,6 @@ import { Button } from "@/components/ui/button";
 import { useMutation } from "@apollo/client";
 import { beginSessionMutation, endSessionMutation } from "../graphql/schema";
 import { useEffect, useState } from "react";
-import { ParsedUrlQuery } from "querystring";
-import { useRouter } from "next/router";
 
 export default function SubmitResult(props: any) {
   const [reset, setReset] = useState<boolean>(false);
@@ -14,7 +12,6 @@ export default function SubmitResult(props: any) {
   function handleSubmit() {
     if (reset) {
       beginSession({ variables: { input: { begin: true, session: props.session } } });
-      //   props.startPolling(2000)
     } else {
       updateSession({ variables: { input: { end: true, session: props.session } } });
     }

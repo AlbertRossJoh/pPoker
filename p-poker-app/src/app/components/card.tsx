@@ -1,6 +1,4 @@
 "use client";
-import { ParsedUrlQuery } from "querystring";
-import { useRouter } from "next/router";
 
 export default function Card(props: any) {
   let hoveranimation =
@@ -28,7 +26,7 @@ export default function Card(props: any) {
         (props.animation ? hoveranimation + select : "") 
       }
     >
-      <div className="m1">{props.reveal ? getCoffeeOrDoubt(props.number) : ""}</div>
+      <p className="m1">{props.reveal ? getCoffeeOrDoubt(props.number) : ""}</p>
     </button>
   );
 }

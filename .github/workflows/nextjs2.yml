@@ -2,7 +2,7 @@
 #
 # To get started with Next.js see: https://nextjs.org/docs/getting-started
 #
-name: Deploy Next.js site to Pages
+name: Deploy Next.js site to Pages 2
 
 on:
   # Runs on pushes targeting the default branch
@@ -31,8 +31,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          path: ./p-poker-app
       - name: Detect package manager
         id: detect-package-manager
         run: |
@@ -80,7 +78,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: src/p-poker-app/out
+          path: ./out
 
   # Deployment job
   deploy:
